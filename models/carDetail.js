@@ -33,6 +33,51 @@ const carDetailSchema = new mongoose.Schema({
   area_inspeksi: {
     type: String,
     required: true
+  },
+  affiliate: {
+    type: String,
+    required: false,
+    default: null
+  },
+  sub_affiliate: {
+    type: String,
+    required: false,
+    default: null
+  },
+  marketing_handler: {
+    type: String,
+    required: false,
+    default: null
+  },
+  inspector_handler: {
+    type: String,
+    required: false,
+    default: null
+  },
+  flag: {
+    type: String,
+    required: false,
+    default: null
+  },
+  update_status: {
+    type: String,
+    required: false,
+    default: null
+  },
+  harga_permintaan: {
+    type: String,
+    required: false,
+    default: null
+  },
+  harga_penawaran_terakhir: {
+    type: String,
+    required: false,
+    default: null
+  },
+  harga_final: {
+    type: String,
+    required: false,
+    default: null
   }
 })
 

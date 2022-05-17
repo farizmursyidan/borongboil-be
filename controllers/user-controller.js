@@ -18,7 +18,7 @@ const loginUser = async (req, res) => {
     if (checkPassword) {
       req.session.loggedin = true;
       req.session.username = username;
-      res.send({ "login_status": "logged_in" })
+      res.send({ "login_status": "logged_in", "username": username, "role": !user.role ? "" : user.role })
     } else {
       return res.status(401).send({ "error": "Incorrect Username or Password!" })
     }
@@ -30,6 +30,20 @@ const loginUser = async (req, res) => {
 const logoutUser = async (req, res) => {
   req.session.destroy((err) => { })
   res.send({ "login_status": "logged_out" })
+}
+
+const getUser = async (req, res) => {
+  if (req.session.loggedin) {
+    try {
+      const user = await User.find();
+      res.status(200).send({ data: user })
+    } catch (e) {
+      console.log(e);
+      res.status(500).send({ message: "Internal Server Error" });
+    }
+  } else {
+    res.status(401).send({ message: "Unauthorized" });
+  }
 }
 
 const createUser = async (req, res) => {
@@ -44,6 +58,7 @@ const createUser = async (req, res) => {
   let hash = bcrypt.hashSync(bodyData.password, salt);
 
   bodyData.password = hash
+  bodyData.affiliate_link = 'https://borongboil.id/?m=' + bodyData.username
 
   try {
     const newUser = new User({
@@ -57,8 +72,68 @@ const createUser = async (req, res) => {
   }
 }
 
+const updateUser = async (req, res) => {
+  if (req.session.loggedin) {
+    const id = req.params.id
+    const data = req.body;
+
+    const user = await User.findOne({ _id: id })
+
+    if (!user) {
+      return res.status(401).send({ "error": "User is not found!" })
+    }
+
+    try {
+      const bulkOps = []
+      let dataObject = data
+      delete dataObject._id
+      let dataUpdate = {
+        'updateOne': {
+          'filter': { '_id': id },
+          'update': dataObject
+        }
+      }
+      bulkOps.push(dataUpdate)
+      const bulkResult = await User.bulkWrite(bulkOps)
+
+      res.status(200).send(bulkResult)
+    } catch (e) {
+      console.log(e);
+      res.status(500).send({ message: "Internal Server Error" })
+    }
+  } else {
+    res.status(401).send({ message: "Unauthorized" });
+  }
+}
+
+const deleteUser = async (req, res) => {
+  if (req.session.loggedin) {
+    const id = req.params.id
+
+    const user = await User.findOne({ _id: id })
+
+    if (!user) {
+      return res.status(401).send({ "error": "User is not found!" })
+    }
+
+    try {
+      const deleteData = await User.deleteOne({ _id: id })
+
+      res.status(200).send(deleteData)
+    } catch (e) {
+      console.log(e);
+      res.status(500).send({ message: "Internal Server Error" })
+    }
+  } else {
+    res.status(401).send({ message: "Unauthorized" });
+  }
+}
+
 module.exports = {
   loginUser: loginUser,
   logoutUser: logoutUser,
-  createUser: createUser
+  getUser: getUser,
+  createUser: createUser,
+  updateUser: updateUser,
+  deleteUser: deleteUser
 }

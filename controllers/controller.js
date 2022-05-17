@@ -1,5 +1,6 @@
 const CarDetail = require('../models/carDetail');
 const CarDatabase = require('../models/carDatabase');
+const { queryHandler } = require('../components/searchingMethods')
 
 const getCarDetail = async (req, res) => {
   if (req.session.loggedin) {
@@ -98,9 +99,17 @@ const getCarDatabaseLandingPage = async (req, res) => {
 
 const getCarDatabase = async (req, res) => {
   if (req.session.loggedin) {
+    let queryObject = {}
+
+    if (req.query !== undefined) {
+      queryObject = req.query
+    }
+
     try {
-      const carDatabase = await CarDatabase.find();
-      res.status(200).send({ data: carDatabase })
+      const { query, projection, options, page } = await queryHandler(queryObject)
+      const countQueryData = await CarDatabase.find(query).countDocuments()
+      const carDatabase = await CarDatabase.find(query, projection, options);
+      res.status(200).send({ data: carDatabase, maxResults: options.limit, page, totalResults: countQueryData })
     } catch (e) {
       console.log(e);
       res.status(500).send({ message: "Internal Server Error" });
