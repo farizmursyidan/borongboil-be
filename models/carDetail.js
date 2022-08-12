@@ -2,6 +2,10 @@ const mongoose = require('mongoose')
 const { dbBorongBoil } = require('../db/connection')
 
 const carDetailSchema = new mongoose.Schema({
+  cl_id: {
+    type: String,
+    required: true
+  },
   merk: {
     type: String,
     required: true
@@ -76,6 +80,11 @@ const carDetailSchema = new mongoose.Schema({
   },
   harga_final: {
     type: String,
+    required: false,
+    default: null
+  },
+  assign_date: {
+    type: Date,
     required: false,
     default: null
   }

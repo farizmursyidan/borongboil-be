@@ -18,12 +18,32 @@ const loginUser = async (req, res) => {
     if (checkPassword) {
       req.session.loggedin = true;
       req.session.username = username;
-      res.send({ "login_status": "logged_in", "username": username, "role": !user.role ? "" : user.role })
+      res.status(200).send({
+        "code": 200,
+        "status": "OK",
+        "data": {
+          "login_status": "logged_in",
+          "username": username,
+          "role": !user.role ? "" : user.role
+        }
+      })
     } else {
-      return res.status(401).send({ "error": "Incorrect Username or Password!" })
+      return res.status(401).send({
+        "code": 401,
+        "status": "Incorrect Username or Password!",
+        "data": {
+          "login_status": "login_failed"
+        }
+      })
     }
   } else {
-    return res.status(401).send({ "error": "Please enter Username and Password!" })
+    return res.status(401).send({
+      "code": 401,
+      "status": "Please enter Username and Password!",
+      "data": {
+        "login_status": "login_failed"
+      }
+    })
   }
 }
 
