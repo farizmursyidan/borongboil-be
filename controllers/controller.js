@@ -7,6 +7,7 @@ const { queryHandler } = require('../components/searchingMethods')
 const path = require('path')
 const asyncLib = require('async')
 const uniqueFilename = require('unique-filename')
+const fs = require('fs')
 
 const getCarDetail = async (req, res) => {
   if (req.session.loggedin) {
@@ -89,8 +90,8 @@ const updateCarDetail = async (req, res) => {
     const carDetail = await CarDetail.findOne({ _id: id })
 
     if (!carDetail) {
-      return res.status(401).send({
-        code: 401,
+      return res.status(404).send({
+        code: 404,
         status: "Car detail is not found!"
       })
     }
@@ -135,7 +136,7 @@ const deleteCarDetail = async (req, res) => {
     const carDetail = await CarDetail.findOne({ _id: id })
 
     if (!carDetail) {
-      return res.status(401).send({ "error": "Car detail is not found!" })
+      return res.status(404).send({ "error": "Car detail is not found!" })
     }
 
     try {
@@ -232,7 +233,7 @@ const updateCarDatabase = async (req, res) => {
     const carDatabase = await CarDatabase.findOne({ _id: id })
 
     if (!carDatabase) {
-      return res.status(401).send({ "error": "Car item is not found!" })
+      return res.status(404).send({ "error": "Car item is not found!" })
     }
 
     try {
@@ -265,7 +266,7 @@ const deleteCarDatabase = async (req, res) => {
     const carDatabase = await CarDatabase.findOne({ _id: id })
 
     if (!carDatabase) {
-      return res.status(401).send({ "error": "Car item is not found!" })
+      return res.status(404).send({ "error": "Car item is not found!" })
     }
 
     try {
@@ -306,6 +307,38 @@ const getCarMerk = async (req, res) => {
   }
 }
 
+const getInspectionReport = async (req, res) => {
+  if (req.session.loggedin) {
+
+    const id = req.params.id
+    try {
+      const inspectionReport = await CarInspection.findOne({ 'informasi_umum.cl_id': id });
+      if (!inspectionReport) {
+        res.status(404).send({
+          code: 404,
+          status: "Inspection report is not found!"
+        })
+      }
+      res.status(200).send({
+        code: 200,
+        status: "OK",
+        data: inspectionReport
+      })
+    } catch (e) {
+      console.log(e);
+      res.status(500).send({
+        code: 500,
+        status: "Internal Server Error"
+      })
+    }
+  } else {
+    res.status(401).send({
+      code: 401,
+      status: "Unauthorized"
+    })
+  }
+}
+
 const createInspectionReport = async (req, res) => {
   if (req.session.loggedin) {
     const bodyData = typeof req.body.inspection_report === 'string' ? JSON.parse(req.body.inspection_report) : req.body.inspection_report
@@ -316,8 +349,8 @@ const createInspectionReport = async (req, res) => {
       const carDetail = await CarDetail.findOne({ _id: id })
 
       if (!carDetail) {
-        return res.status(401).send({
-          code: 401,
+        return res.status(404).send({
+          code: 404,
           status: "Car detail is not found!"
         })
       }
@@ -398,6 +431,54 @@ const createInspectionReport = async (req, res) => {
   }
 }
 
+const getFotoKendaraan = async (req, res) => {
+  if (req.session.loggedin) {
+    const id = req.params.id
+    const foto = req.params.foto
+    let filePath = '../foto-kendaraan/'
+    const inspectionReport = await CarInspection.findOne({ 'informasi_umum.cl_id': id })
+
+    if (!inspectionReport) {
+      return res.status(404).send({
+        "error": {
+          code: 404,
+          message: "Inspection report does not exist."
+        }
+      })
+    }
+
+    if (!inspectionReport.foto_kendaraan.foto[foto]) {
+      return res.status(404).send({
+        "error": {
+          code: 404,
+          message: "Photo does not exist."
+        }
+      })
+    }
+
+    let foto_file = inspectionReport.foto_kendaraan.foto[foto]
+    try {
+      const file = path.join(__dirname, filePath) + foto_file.system_name
+      if (!fs.existsSync(file)) {
+        return res.status(404).send({
+          "error": {
+            code: 404,
+            message: "Photo is not found."
+          }
+        })
+      }
+      res.status(200).sendFile(file)
+    } catch (e) {
+      res.status(500).send({ status: "Internal Server Error" })
+    }
+  } else {
+    res.status(401).send({
+      code: 401,
+      status: "Unauthorized"
+    })
+  }
+}
+
 module.exports = {
   getCarDetail,
   createCarDetail,
@@ -409,5 +490,7 @@ module.exports = {
   deleteCarDatabase,
   getCarDatabaseLandingPage,
   getCarMerk,
-  createInspectionReport
+  getInspectionReport,
+  createInspectionReport,
+  getFotoKendaraan
 }

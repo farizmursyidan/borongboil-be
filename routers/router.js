@@ -1,4 +1,4 @@
-const { getCarDetail, createCarDetail, updateCarDetail, deleteCarDetail, getCarDatabase, createCarDatabase, updateCarDatabase, deleteCarDatabase, getCarDatabaseLandingPage, getCarMerk, createInspectionReport } = require('../controllers/controller');
+const { getCarDetail, createCarDetail, updateCarDetail, deleteCarDetail, getCarDatabase, createCarDatabase, updateCarDatabase, deleteCarDatabase, getCarDatabaseLandingPage, getCarMerk, getInspectionReport, createInspectionReport, getFotoKendaraan } = require('../controllers/controller');
 const { loginUser, logoutUser, getUser, createUser, updateUser, deleteUser } = require('../controllers/user-controller');
 const express = require('express');
 const router = express.Router();
@@ -11,6 +11,8 @@ router.route('/borongboilapi/getCarDatabaseLandingPage').get(getCarDatabaseLandi
 router.route('/borongboilapi/logoutUser').get(logoutUser);
 router.route('/borongboilapi/getUser').get(getUser);
 router.route('/borongboilapi/getCarMerk').get(getCarMerk);
+router.route('/borongboilapi/getInspectionReport/:id').get(getInspectionReport);
+router.route('/borongboilapi/getFotoKendaraan/:id/:foto').get(getFotoKendaraan);
 
 // POST
 router.route('/borongboilapi/loginUser').post(loginUser);
